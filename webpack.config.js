@@ -6,6 +6,13 @@ module.exports = {
   module: {
     rules: [
       {
+        test: /\.tsx?$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'awesome-typescript-loader'
+        }
+      },
+      {
         test: /\.js$/,
         exclude: /node_modules/,
         use: {
@@ -52,6 +59,7 @@ module.exports = {
     })
   ],
   resolve: {
+    extensions: ['.ts', '.tsx', '.js', '.jsx'],
     alias: {
       style: path.resolve(__dirname, './src/style/'),
     },
