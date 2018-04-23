@@ -26,8 +26,10 @@
   "dependencies": {
     "@types/classnames": "^2.2.3",
     "@types/lodash": "^4.14.107",
+    "@types/query-string": "^5.1.0",
     "@types/react": "^16.3.12",
     "@types/react-dom": "^16.0.5",
+    "@types/react-router": "^4.0.23",
     "@types/shortid": "0.0.29",
     "awesome-typescript-loader": "^5.0.0",
     "babel-eslint": "^8.2.3",

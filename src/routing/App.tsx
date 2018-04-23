@@ -1,15 +1,16 @@
+import * as React from 'react';
 import { Route, Router, Switch } from 'react-router';
 import * as R from './routes';
 import RouteError from './RouteError';
 import history from './history';
-import queryString from 'query-string';
+import * as queryString from 'query-string';
 
 import { ContextProvider } from '../context';
 
 import Home from '../features/Home';
 import Praise from '../features/Praise';
 
-import styles from './style.less';
+import * as styles from './style.less';
 
 export default function App() {
   return (
@@ -21,7 +22,7 @@ export default function App() {
              <Route exact path={R.PRAISE} render={({ location, history}) => (
                <Praise
                  recipientId={queryString.parse(location.search).recipientId}
-                 updateRecipientId={recipientId => history.replace({ search: queryString.stringify({ recipientId}) })}
+                 updateRecipientId={(recipientId: string) => history.replace({ search: queryString.stringify({ recipientId}) })}
                />
              )} />
              <Route render={() => <RouteError errorCode={404} />} />
