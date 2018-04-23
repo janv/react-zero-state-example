@@ -1,9 +1,9 @@
-import { Fragment } from 'react';
-import ReactModal from 'react-modal';
-import classNames from 'classnames';
+import * as React from 'react';
+import * as ReactModal from 'react-modal';
+import * as classNames from 'classnames';
 import { noop } from 'lodash/fp';
 
-import styles from './style.less';
+import * as styles from './style.less';
 
 const TRANSITION_DURATION = 150;
 
@@ -17,18 +17,28 @@ const SIZES = {
   AUTO: 'auto',
 };
 
-const parseMinHeight = minHeight =>
+const parseMinHeight = (minHeight?:number|string) =>
   typeof minHeight === 'number' ? `${minHeight}px` : minHeight || 'auto';
 
-const asSizeValue = v => (typeof v === 'number' ? `${v}px` : v);
+const asSizeValue = (v:number|string) => (typeof v === 'number' ? `${v}px` : v);
 
-const ModalTitle = ({ children, className }) => (
+const ModalTitle:React.SFC<{className?:string}> = ({ children, className }) => (
   <h1 className={classNames(styles.title, className)}>
     {children}
   </h1>
 );
 
-export default ({ title, size, width, minHeight, isOpen, onClose, children }) => {
+export interface Props {
+  title?: string
+  size: keyof typeof SIZES
+  width?: string | number
+  minHeight?: string | number
+  isOpen: boolean
+  onClose?():void
+  children?: React.ReactNode
+}
+
+const Modal:React.SFC<Props> = ({ title, size, width, minHeight, isOpen, onClose, children }) => {
   const style = {
     overlay: {
       transitionDuration: TRANSITION_DURATION + 'ms',
@@ -50,12 +60,12 @@ export default ({ title, size, width, minHeight, isOpen, onClose, children }) =>
 
   return (
     <ReactModal {...props} ariaHideApp={false}>
-      <Fragment>
+      <>
         {title && <ModalTitle>{title}</ModalTitle>}
         {children}
-      </Fragment>
+      </>
     </ReactModal>
   );
 }
 
-
+export default Modal

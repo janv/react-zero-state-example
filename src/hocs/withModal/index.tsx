@@ -1,6 +1,20 @@
-import PropTypes from 'prop-types';
-import { Component, Fragment } from 'react';
-import Modal from '../../components/Modal';
+import * as React from 'react';
+import * as PropTypes from 'prop-types';
+import Modal, {Props as ModalProps} from '../../components/Modal';
+
+type Props = Exclude<ModalProps, 'children'> & {
+  renderModalContent: (actions:Actions) => React.ReactNode
+  children: (actions:Actions) => React.ReactNode
+}
+
+interface State {
+  isOpen: boolean
+}
+
+interface Actions {
+  openModal():void
+  closeModal():void
+}
 
 /**
  * Component that manages open/closed state for a modal
@@ -15,12 +29,12 @@ import Modal from '../../components/Modal';
  * </WithModal>
  * ```
  */
-export class WithModal extends Component {
-  state = {
+export class WithModal extends React.Component<Props, State> {
+  state:State = {
     isOpen: false,
   };
 
-  actions = {
+  actions:Actions = {
     openModal: () => {
       this.setState({ isOpen: true });
     },
@@ -35,7 +49,7 @@ export class WithModal extends Component {
   render() {
     const { onClose, renderModalContent, children: render, ...props } = this.props; // eslint-disable-line no-unused-vars
     return (
-      <Fragment>
+      <>
         <Modal
           {...props}
           isOpen={this.state.isOpen}
@@ -44,7 +58,7 @@ export class WithModal extends Component {
           {renderModalContent(this.actions)}
         </Modal>
         {render(this.actions)}
-      </Fragment>
+      </>
     );
   }
 }
@@ -55,6 +69,17 @@ const propTypes = {
   }),
   requireExplicitClose: PropTypes.bool,
 };
+
+
+/**
+ * The Props the decorator adds to the decorated function
+ */
+interface DecoratorProps {
+  modalProps: Props & {
+    body: React.ComponentClass<any>
+  },
+  onClose?: () => void
+}
 
 /**
  * Decorator that wraps a component in a WithModal component.
@@ -74,8 +99,9 @@ const propTypes = {
  * It passes an `onClick` handler to MyComponent that opens the modal.
  * It doesn't forward any props to the Modalbody except for a `closeModal` callback
  */
-export function withModal(WrappedComponent) {
-  function ComponentWithModal(allProps) {
+export function withModal<P extends {onClick?():void}>(WrappedComponent:React.ComponentClass<P>) {
+  function ComponentWithModal(allProps:P&DecoratorProps) {
+    // @ts-ignore
     const { modalProps: { body: ModalBody, ...modalProps }, onClose, ...props } = allProps;
     return (
       <WithModal
@@ -88,7 +114,7 @@ export function withModal(WrappedComponent) {
     );
   }
 
-  ComponentWithModal.propTypes = propTypes;
+  (ComponentWithModal as React.SFC).propTypes = propTypes;
   return ComponentWithModal;
 }
 
