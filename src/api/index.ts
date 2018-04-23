@@ -15,6 +15,7 @@ const config = {
 };
 
 const plugins = [logger(), observable()];
+const api = build(config, plugins); 
 
-export default build(config, plugins);
+export default  api
 

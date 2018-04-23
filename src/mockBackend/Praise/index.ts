@@ -5,13 +5,13 @@ import { generateId } from '../id';
 import { withLatency } from '../latency';
 import { User, USER, getCurrentUser } from '../User';
 
-interface NewPraise {
+export interface NewPraise {
   title: string
   body: string
   recipient: User
 }
 
-interface Praise extends NewPraise {
+export interface Praise extends NewPraise {
   id: string
   author: User
   likes: User[]
