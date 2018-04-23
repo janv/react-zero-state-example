@@ -1,22 +1,8 @@
-import * as moment from 'moment';
-import { compose, keyBy, values, uniq, filter, identity } from 'lodash/fp';
-import {orderBy} from 'lodash';
+import moment from 'moment';
+import { compose, orderBy, keyBy, values, uniq, filter, identity } from 'lodash/fp';
 import { generateId } from '../id';
 import { withLatency } from '../latency';
-import { User, USER, getCurrentUser } from '../User';
-
-interface NewPraise {
-  title: string
-  body: string
-  recipient: User
-}
-
-interface Praise extends NewPraise {
-  id: string
-  author: User
-  likes: User[]
-  createdAt: number
-}
+import { USER, getCurrentUser } from '../User';
 
 const PRAISES = keyBy('id', [
   {
@@ -27,7 +13,7 @@ const PRAISES = keyBy('id', [
     recipient: USER.MARY,
     likes: [USER.FIONA, USER.CHRIS],
     createdAt: moment().subtract(1, 'day').valueOf()
-  } as Praise,
+  },
   {
     id: generateId(),
     title: 'What a start!',
@@ -36,7 +22,7 @@ const PRAISES = keyBy('id', [
     recipient: USER.FIONA,
     likes: [USER.CHRIS, USER.MARK, USER.HEATHER, USER.MARY],
     createdAt: moment().subtract(2, 'day').valueOf()
-  } as Praise,
+  },
   {
     id: generateId(),
     title: 'The strategy workshop worked wonders',
@@ -45,7 +31,7 @@ const PRAISES = keyBy('id', [
     recipient: USER.CHRIS,
     likes: [USER.MARY, USER.MARK],
     createdAt: moment().subtract(3, 'day').valueOf()
-  } as Praise,
+  },
   {
     id: generateId(),
     title: 'Everyone loved the company trip',
@@ -54,22 +40,22 @@ const PRAISES = keyBy('id', [
     recipient: USER.HEATHER,
     likes: [USER.MARY, USER.MARK, USER.FIONA],
     createdAt: moment().subtract(4, 'day').valueOf()
-  } as Praise,
+  },
 ]);
 
-export const getById = (id:string) => withLatency(PRAISES[id])
+const _getById = (id) => PRAISES[id];
 
-export const getAll = (recipientId?:string) => {
-  const filtered = recipientId
-    ? Object.values(PRAISES).filter(p => p.recipient.id === recipientId)
-    : Object.values(PRAISES)
-  return orderBy(filtered, ['createdAt'], ['desc'])
-}
-
-export const create = (praiseData:NewPraise) => {
+export const getById = compose(withLatency, _getById);
+export const getAll = (recipientId = null) => compose(
+  withLatency,
+  recipientId ? filter(p => p.recipient.id === recipientId) : identity,
+  orderBy(['createdAt'], ['desc']),
+  values
+)(PRAISES);
+export const create = (praiseData) => {
   return getCurrentUser().then(currentUser => {
     const id = generateId();
-    const praise:Praise = {
+    const praise = {
       ...praiseData,
       id,
       author: currentUser,
@@ -81,23 +67,23 @@ export const create = (praiseData:NewPraise) => {
   });
 }
 
-export const edit = (praise:Praise) => {
+export const edit = (praise) => {
   PRAISES[praise.id] =  praise;
   return withLatency(praise);
 }
 
-export const remove = (id:string) => withLatency(delete PRAISES[id]);
+export const remove = (id) => withLatency(delete PRAISES[id]);
 
-export const like = (id:string):Promise<Praise> => getCurrentUser().then(u => {
-  const praise = PRAISES[id]
+export const like = (id) => getCurrentUser().then(u => {
+  const praise = _getById(id);
   return {
     ...praise,
     likes: uniq([...praise.likes, u])
   };
 });
 
-export const unlike = (id:string):Promise<Praise> => getCurrentUser().then(u => {
-  const praise = PRAISES[id]
+export const unlike = (id) => getCurrentUser().then(u => {
+  const praise = _getById(id);
   return {
     ...praise,
     likes: filter(l => l !== u, praise.likes)
